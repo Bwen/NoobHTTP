@@ -1,0 +1,22 @@
+{
+    "name": "NoobHTTP"
+  , "version": "0.2"
+  , "description": "Simple nodejs HTTP server for static files"
+  , "homepage": ""
+  , "keywords": ["static", "server", "nodejs", "http", "simple"]
+  , "author": "Philippe Guilbault <philippe.guilbault@gmail.com>"
+  , "contributors": [
+    ]
+  , "repository":{
+        "type": "git"
+      , "url": "https://git@github.com:Bwen/NoobHTTP.git"
+    }
+  , "dependencies": {
+    }
+  , "devDependencies": {
+    }
+  , "main": "index"
+  , "engines": { "node": ">= 0.4.0" }
+  , "scripts": {
+    }
+}
