@@ -1,6 +1,6 @@
 {
     "name": "NoobHTTP"
-  , "version": "0.2"
+  , "version": "0.3"
   , "description": "Simple nodejs HTTP server for static files"
   , "homepage": ""
   , "keywords": ["static", "server", "nodejs", "http", "simple"]
