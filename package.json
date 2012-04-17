@@ -12,6 +12,8 @@
       , "url": "https://git@github.com:Bwen/NoobHTTP.git"
     }
   , "dependencies": {
+      "NoobConfig": "0.2",
+      "mime": "1.2.5"
     }
   , "devDependencies": {
     }
