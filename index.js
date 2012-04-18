@@ -111,7 +111,7 @@ NoobHTTP.prototype.processRequest = function processRequest(req, res) {
     }
     
     var log = getLog(req);
-    if ((properties.hasOwnProperty('forbidden') && properties.forbidden) || req.url.match(forbiddenRegex)) {
+    if ((properties.hasOwnProperty('forbidden') && properties.forbidden) || path.basename(filename).match(forbiddenRegex)) {
         log.code = 403;
         self.logFile.write(JSON.stringify(log)+"\n");
         res.writeHead(403, {'Content-Type': 'text/plain'});
