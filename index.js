@@ -111,9 +111,20 @@ NoobHTTP.prototype.processRequest = function processRequest(req, res) {
     }
     
     var log = getLog(req);
-    if ((properties.hasOwnProperty('forbidden') && properties.forbidden) || path.basename(filename).match(forbiddenRegex)) {
+    if (properties.hasOwnProperty('https') && !this.isSSL) {
+        log.code = 301;
+        this.logFile.write(JSON.stringify(log)+"\n");
+        res.writeHead(301, {
+            'Content-Type': 'text/plain',
+            'Location': properties.https
+        });
+        res.end('Moved Permanently');
+    }
+    
+    if ((properties.hasOwnProperty('forbidden') && properties.forbidden) 
+      || path.basename(filename).match(forbiddenRegex)) {
         log.code = 403;
-        self.logFile.write(JSON.stringify(log)+"\n");
+        this.logFile.write(JSON.stringify(log)+"\n");
         res.writeHead(403, {'Content-Type': 'text/plain'});
         res.end('Forbidden 403');
         return;
