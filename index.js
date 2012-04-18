@@ -14,9 +14,11 @@ function NoobHTTP (config) {
           +(now.getDate() < 10 ? '0'+now.getDate() : now.getDate())
     this.logFile = fs.createWriteStream(Config('NoobHTTP').path.logs + config.name +'.'+ date +'.log', {'flags': 'a'});
     
+    this.forbiddenRegex = Config('NoobHTTP').filename.forbiddenRegex;
+    this.propertyFilename = Config('NoobHTTP').filename.property;
     this.auth = config.auth;
     this.name = config.name;
-    this.path = config.path;
+    this.path = fs.realpathSync(config.path);
     this.isSSL = config.isSSL;
     if (config.isSSL) {
         this.http_server = require('https').createServer({
@@ -44,8 +46,8 @@ NoobHTTP.prototype.response = function response(filename, res, log) {
             log.error = err;
             log.code = 500;
             self.logFile.write(JSON.stringify(log)+"\n");
-            res.writeHead(500, {'Content-Type': 'text/html'});
-            res.end(fs.readFileSync('public/errors/500.html'));
+            res.writeHead(500, {'Content-Type': 'text/plain'});
+            res.end('Internal Error');
             return;
         }
 
@@ -56,30 +58,76 @@ NoobHTTP.prototype.response = function response(filename, res, log) {
     });
 };
 
-NoobHTTP.prototype.requestBasicAuth = function requestBasicAuth(res, log) {
+NoobHTTP.prototype.requestBasicAuth = function requestBasicAuth(realm, res, log) {
     log.code = 401;
     this.logFile.write(JSON.stringify(log)+"\n");
     res.writeHead(401, {
         'Content-Type': 'text/plain',
-        'WWW-Authenticate': 'Basic realm="NoobHTTP"'
+        'WWW-Authenticate': 'Basic realm="'+realm+'"'
     });
     res.end('Authentication required');
 };
 
+NoobHTTP.prototype.getPathProperties = function findBoobies(filename) {
+    var properties =  {}
+      , currentPath = (path.extname(filename) !== '' ? filename.replace(/\/([^/]+)$/, '') : filename.replace(/\/$/, ''))
+      , specialProperties = ['auth', 'forbidden']
+      , i = 0;
+    
+    function mergeProperties(oldProperties, newProperties) {
+        for (var key in oldProperties) {
+            if (specialProperties.indexOf(key) === -1) {
+                newProperties[ key ] = oldProperties[ key ];
+            }
+        }
+        return newProperties;
+    }
+    
+    while (this.path != currentPath && i < 10) {
+        if (path.existsSync(currentPath +'/'+ this.propertyFilename)) {
+            properties = mergeProperties(properties, JSON.parse(fs.readFileSync(currentPath +'/'+ this.propertyFilename)));
+        }
+        currentPath = currentPath.replace(/\/([^/]+)$/, '');
+        i++;
+    }
+    
+    if (path.existsSync(currentPath +'/'+ this.propertyFilename)) {
+        properties = mergeProperties(properties, JSON.parse(fs.readFileSync(currentPath +'/'+ this.propertyFilename)));
+    }
+    
+    return properties;
+};
+
 NoobHTTP.prototype.processRequest = function processRequest(req, res) {
     var self = this
-      , filename = this.path +'index.html';
+      , realm = 'NoobHTTP Basic Auth'
+      , requiresBasicAuth = this.auth
+      , filename = path.normalize(this.path + req.url)
+      , properties = this.getPathProperties(filename)
+      , forbiddenRegex = new RegExp(this.forbiddenRegex, "gi");
 
-    if ('/' != req.url) {
-        filename = this.path + req.url;
+    if (path.extname(filename) === '') {
+        filename += (properties.hasOwnProperty('defaultIndex') ? properties.defaultIndex: 'index.html');
     }
-    filename = path.normalize(filename);
-
+    
     var log = getLog(req);
+    if ((properties.hasOwnProperty('forbidden') && properties.forbidden) || req.url.match(forbiddenRegex)) {
+        log.code = 403;
+        self.logFile.write(JSON.stringify(log)+"\n");
+        res.writeHead(403, {'Content-Type': 'text/plain'});
+        res.end('Forbidden 403');
+        return;
+    }
+    
+    if (properties.hasOwnProperty('auth')) {
+        requiresBasicAuth = true;
+        realm = properties.auth.realm;
+    }
+    
     if (path.existsSync(filename)) {
-        if (this.auth) {
+        if (requiresBasicAuth) {
             if (!req.headers.hasOwnProperty('authorization')) {
-                this.requestBasicAuth(res, log);
+                this.requestBasicAuth(realm, res, log);
                 return;
             }
 
@@ -91,7 +139,7 @@ NoobHTTP.prototype.processRequest = function processRequest(req, res) {
                     self.response(filename, res, log);
                 }
                 else {
-                    self.requestBasicAuth(res, log);
+                    self.requestBasicAuth(realm, res, log);
                 }
             });
         }
@@ -103,7 +151,7 @@ NoobHTTP.prototype.processRequest = function processRequest(req, res) {
         log.code = 404;
         self.logFile.write(JSON.stringify(log)+"\n");
         res.writeHead(404, {'Content-Type': 'text/plain'});
-        res.end('Error 404');
+        res.end('File Not Found 404');
     }
 
 };
