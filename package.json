@@ -10,7 +10,9 @@
       , "url": "https://git@github.com:Bwen/NoobHTTP.git"
     }   
   , "engines": { "node": "~0.6.11" }
-  , "dependencies": {}   
+  , "dependencies": {
+    "NoobConfig": ">=0.2.0"
+  } 
   , "devDependencies": {}   
   , "main": "index"
 } 
