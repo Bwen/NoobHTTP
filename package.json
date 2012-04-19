@@ -1,11 +1,6 @@
 {
-<<<<<<< HEAD
     "author": "Philippe Guilbault <philippe.guilbault@gmail.com>"
   , "name": "NoobHTTP"
-=======
-    "name": "NoobHTTP"
-  , "version": "0.3"
->>>>>>> 34d0b2b1e24155a73cebbe8ab04f346c585769ad
   , "description": "Simple nodejs HTTP server for static files"
   , "keywords": ["static", "server", "nodejs", "http", "simple"]
   , "version": "0.3.0"
@@ -13,19 +8,9 @@
   , "repository":{
         "type": "git"
       , "url": "https://git@github.com:Bwen/NoobHTTP.git"
-<<<<<<< HEAD
     }   
   , "engines": { "node": "~0.6.11" }
   , "dependencies": {}   
   , "devDependencies": {}   
-=======
-    }
-  , "dependencies": {
-      "NoobConfig": "0.2",
-      "mime": "1.2.5"
-    }
-  , "devDependencies": {
-    }
->>>>>>> 34d0b2b1e24155a73cebbe8ab04f346c585769ad
   , "main": "index"
 } 
