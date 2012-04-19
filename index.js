@@ -145,7 +145,7 @@ NoobHTTP.prototype.processRequest = function processRequest(req, res) {
             var header=req.headers['authorization']||'', token=header.split(/\s+/).pop()||'', auth=new Buffer(token, 'base64').toString(), parts=auth.split(/:/)
               , username=parts[0]
               , password=parts[1];
-            this.emit('authenticate', username, password, function (isAuthenticated) {
+            this.emit('authenticate', username, password, req.socket.remoteAddress, function (isAuthenticated) {
                 if (isAuthenticated) {
                     self.response(filename, res, log);
                 }
