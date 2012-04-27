@@ -21,6 +21,7 @@ function NoobHTTP (config) {
     this.path = fs.realpathSync(config.path);
     this.isSSL = config.isSSL;
     this.http_server = null;
+    this.replacements = config.replacements;
     
     // if we already have server in the config we dont initiate a new one
     if (config.hasOwnProperty('http_server')) {
@@ -62,6 +63,19 @@ NoobHTTP.prototype.response = function response(filename, res, log) {
         log.code = 200;
         self.logFile.write(JSON.stringify(log)+"\n");
         res.writeHead(200, {'Content-Type': mime.lookup(filename)});
+        
+        // if we need to replace markers for certain extensions we do so
+        if (self.replacements && Object.keys(self.replacements).length > 0) {
+            data = data.toString();
+            for (var extensions in self.replacements) {
+                if (extensions.indexOf(path.extname(filename)) !== -1) {
+                    for (var key in self.replacements[ extensions ]) {
+                        data = data.replace(key, self.replacements[ extensions ][ key ]);
+                    }
+                }
+            }
+        }
+        
         res.end(data);
     });
 };
