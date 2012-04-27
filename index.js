@@ -20,6 +20,14 @@ function NoobHTTP (config) {
     this.name = config.name;
     this.path = fs.realpathSync(config.path);
     this.isSSL = config.isSSL;
+    this.http_server = null;
+    
+    // if we already have server in the config we dont initiate a new one
+    if (config.hasOwnProperty('http_server')) {
+        this.http_server = config.http_server;
+        return;
+    }
+    
     if (config.isSSL) {
         this.http_server = require('https').createServer({
             key: fs.readFileSync(Config('NoobHTTP').path.ssl+'privatekey.pem'),
