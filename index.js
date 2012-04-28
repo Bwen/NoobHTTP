@@ -63,7 +63,7 @@ NoobHTTP.prototype.replaceData = function replaceData(data, filename) {
     if (this.replacements && Object.keys(this.replacements).length > 0) {
         data = data.toString();
         for (extensions in this.replacements) {
-            if (this.replacements.hasOwnProperty(extensions) && extensions.indexOf(path.extname(filename)) !== -1) {
+            if (this.replacements.hasOwnProperty(extensions) && extensions.split(',').indexOf(path.extname(filename)) !== -1) {
                 for (key in this.replacements[extensions]) {
                     if (this.replacements[extensions].hasOwnProperty(key)) {
                         data = data.replace(key, this.replacements[extensions][key]);
