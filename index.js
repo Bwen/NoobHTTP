@@ -61,12 +61,11 @@ util.inherits(NoobHTTP, require('events').EventEmitter);
 NoobHTTP.prototype.replaceData = function replaceData(data, filename) {
     var extensions, key;
     if (this.replacements && Object.keys(this.replacements).length > 0) {
-        data = data.toString();
         for (extensions in this.replacements) {
             if (this.replacements.hasOwnProperty(extensions) && extensions.split(',').indexOf(path.extname(filename)) !== -1) {
                 for (key in this.replacements[extensions]) {
                     if (this.replacements[extensions].hasOwnProperty(key)) {
-                        data = data.replace(key, this.replacements[extensions][key]);
+                        data = data.toString().replace(key, this.replacements[extensions][key]);
                     }
                 }
             }
@@ -109,7 +108,7 @@ NoobHTTP.prototype.requestBasicAuth = function requestBasicAuth(realm, res, log)
     res.end('Authentication required');
 };
 
-NoobHTTP.prototype.getPathProperties = function findBoobies(filename) {
+NoobHTTP.prototype.getPathProperties = function getPathProperties(filename) {
     var properties =  {},
         currentPath = (path.extname(filename) !== '' ? filename.replace(/\/([^/]+)$/, '') : filename.replace(/\/$/, '')),
         specialProperties = ['auth', 'forbidden'],
