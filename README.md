@@ -127,7 +127,7 @@ If you want the server to be ssl this is ofcourse required.
         }
     }
 ```
-Theses two options are __optionals__ and defaults to null.
+This option is __optional__ and defaults to null.
 This gives the chance to specify markers to be replaced in certain extensions. Like
 mentioned in the beginning when including js script cross domains you want to be able
 to load static files (html templates) from the domain where the js comes from. Instead
