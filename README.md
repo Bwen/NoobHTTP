@@ -7,7 +7,7 @@ For example if you are on domain1.com and you add a script tag to include a js s
 from domain2.com the js script will not be able to load files with XMLHttpRequest from
 its domain2.com.
 
-For client side utils that goes I use with NoobHTTP visit: https://github.com/Bwen/NoobUtils
+For client side utils that I use with NoobHTTP visit: https://github.com/Bwen/NoobUtils
 
 ## Features
  - HTTP & HTTPS
@@ -117,7 +117,7 @@ and thus redirects the browser with a 301.
     }
 ```
 This property is __optional__ and will default to null.
-If want the server to be ssl this is ofcourse required.
+If you want the server to be ssl this is ofcourse required.
 
 
 ```javascript
