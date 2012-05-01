@@ -94,7 +94,8 @@ function NoobHTTP(options) {
                 self.processRequest.call(self, req, res);
             });
         } else {
-            console.fatal('Error missing ssl properties key or cert');
+            console.error('Error missing ssl properties key or cert');
+            process.exit();
         }
     } else {
         this.http_server = require('http').createServer(function (req, res) {
@@ -285,6 +286,10 @@ NoobHTTP.prototype.processRequest = function processRequest(req, res) {
 };
 
 module.exports.createServer = function (options) {
+    if (options == undefined) {
+        options = {};
+    }
+
     if (!options.hasOwnProperty('port')) {
         options.port = (options.hasOwnProperty('ssl') ? 443 : 80);
     }

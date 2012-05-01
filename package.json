@@ -3,7 +3,7 @@
     "name": "NoobHTTP",
     "description": "Simple nodejs HTTP server for static files",
     "keywords": ["static", "server", "nodejs", "http", "simple", "webapp"],
-    "version": "0.4.0",
+    "version": "0.4.1",
     "homepage": "https://github.com/Bwen/NoobHTTP",
     "licenses": [{"type": "MIT"}],
     "repository":{
