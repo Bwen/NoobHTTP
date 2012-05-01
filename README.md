@@ -54,10 +54,12 @@ All the posibilities are below:
 This property is __optional__ and defaults to `./public/`.
 Defines the root of the server.
 
+
 ```javascript
     port: 80
 ```
 This property is __optional__ and defaults to 80 or 443 if the property "ssl" exists in the options
+
 
 ```javascript
     logEmit: true
@@ -65,11 +67,13 @@ This property is __optional__ and defaults to 80 or 443 if the property "ssl" ex
 This property is __optional__ and defaults to `true`.
 Gives the posibility to have no logs being emitted.
 
+
 ```javascript
-    serverInfo: "NoobHTTP/1.0
+    serverInfo: "NoobHTTP/1.0"
 ```
 This property is __optional__ and defaults to `NoobHTTP/` and the version in the package.json.
 It is put in every response headers as the key 'Server:'.
+
 
 ```javascript
     http_server: require('https')
@@ -78,6 +82,7 @@ This property is __optional__ and defaults to null.
 If this option is specified the NoobHTTP will not instantiate a new http server
 and will not bind itself to it.
 
+
 ```javascript
     socketio: require('socket.io')
 ```
@@ -85,6 +90,7 @@ This property is __optional__ and defaults to null.
 If this option is specified it will make a new namespace "noobhttp" and listen
 events "request" with a file parameter. It will reponse with an emit of the file
 name that was requested with either the content of the file or an error object.
+
 
 ```javascript
     files: {
@@ -103,6 +109,7 @@ json type and supports only 2 options. {"auth": true} which forces a directory t
 for a BasicAuth and {"https":"https://domain2.com/"} which enforces the url to be in https
 and thus redirects the browser with a 301.
 
+
 ```javascript
     ssl: {
         key: fs.readFileSync('./ssl/privatekey.pem'),
@@ -111,6 +118,7 @@ and thus redirects the browser with a 301.
 ```
 This property is __optional__ and will default to null.
 If want the server to be ssl this is ofcourse required.
+
 
 ```javascript
     replacements: {
