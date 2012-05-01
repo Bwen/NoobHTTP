@@ -48,36 +48,50 @@ All the posibilities are below:
         });
 ```
 
-`home: './public/'`
+```javascript
+    home: './public/'
+```
 This property is __optional__ and defaults to `./public/`.
 Defines the root of the server.
 
-`port: 80`
+```javascript
+    port: 80
+```
 This property is __optional__ and defaults to 80 or 443 if the property "ssl" exists in the options
 
-`logEmit: true`
+```javascript
+    logEmit: true
+```
 This property is __optional__ and defaults to `true`.
 Gives the posibility to have no logs being emitted.
 
-`serverInfo: "NoobHTTP/1.0`
+```javascript
+    serverInfo: "NoobHTTP/1.0
+```
 This property is __optional__ and defaults to `NoobHTTP/` and the version in the package.json.
 It is put in every response headers as the key 'Server:'.
 
-`http_server: require('https')`
+```javascript
+    http_server: require('https')
+```
 This property is __optional__ and defaults to null.
 If this option is specified the NoobHTTP will not instantiate a new http server
 and will not bind itself to it.
 
-`socketio: require('socket.io')`
+```javascript
+    socketio: require('socket.io')
+```
 This property is __optional__ and defaults to null.
 If this option is specified it will make a new namespace "noobhttp" and listen
 events "request" with a file parameter. It will reponse with an emit of the file
 name that was requested with either the content of the file or an error object.
 
-`files: {
-    forbidden: "^\.",
-    property: ".noob.json"
-}`
+```javascript
+    files: {
+        forbidden: "^\.",
+        property: ".noob.json"
+    }
+```
 Theses two options are __optionals__ and defaults to null.
 The forbidden regexp option will default to false. If provided as the example all the
 files that starts with a dot will be responded with a 403.
@@ -89,18 +103,22 @@ json type and supports only 2 options. {"auth": true} which forces a directory t
 for a BasicAuth and {"https":"https://domain2.com/"} which enforces the url to be in https
 and thus redirects the browser with a 301.
 
-`ssl: {
-    key: fs.readFileSync('./ssl/privatekey.pem'),
-    cert: fs.readFileSync('./ssl/certificate.pem')
-}`
+```javascript
+    ssl: {
+        key: fs.readFileSync('./ssl/privatekey.pem'),
+        cert: fs.readFileSync('./ssl/certificate.pem')
+    }
+```
 This property is __optional__ and will default to null.
 If want the server to be ssl this is ofcourse required.
 
-`replacements: {
-    '.js,.css,.html': {
-        "__hostUrl__": "https://domain2.com:9000/"
+```javascript
+    replacements: {
+        '.js,.css,.html': {
+            "__hostUrl__": "https://domain2.com:9000/"
+        }
     }
-}`
+```
 Theses two options are __optionals__ and defaults to null.
 This gives the chance to specify markers to be replaced in certain extensions. Like
 mentioned in the beginning when including js script cross domains you want to be able
