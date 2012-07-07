@@ -56,7 +56,7 @@ function NoobHTTP(options) {
         this.noobio.on('connection', function noobio_connection(socket) {
             socket.on('request', function noobio_request(file) {
                 var filename = path.normalize(self.home + file);
-                if (path.existsSync(filename)) {
+                if (fs.existsSync(filename)) {
                     fs.readFile(filename, function (err, data) {
                         if (err) {
                             socket.emit(file, {
@@ -163,14 +163,14 @@ NoobHTTP.prototype.getPathProperties = function getPathProperties(filename) {
     }
 
     while (this.home != currentPath && i < 10) {
-        if (path.existsSync(currentPath + '/' + this.propertyFilename)) {
+        if (fs.existsSync(currentPath + '/' + this.propertyFilename)) {
             properties = mergeProperties(properties, JSON.parse(fs.readFileSync(currentPath + '/' + this.propertyFilename)));
         }
         currentPath = currentPath.replace(/\/[^/]+$/, '');
         i += 1;
     }
 
-    if (path.existsSync(currentPath + '/' + this.propertyFilename)) {
+    if (fs.existsSync(currentPath + '/' + this.propertyFilename)) {
         properties = mergeProperties(properties, JSON.parse(fs.readFileSync(currentPath + '/' + this.propertyFilename)));
     }
 
@@ -253,7 +253,7 @@ NoobHTTP.prototype.processRequest = function processRequest(req, res) {
         realm = properties.auth.realm;
     }
 
-    if (path.existsSync(filename)) {
+    if (fs.existsSync(filename)) {
         if (requiresBasicAuth) {
             if (!req.headers.hasOwnProperty('authorization')) {
                 this.requestBasicAuth(realm, res, log);
