@@ -2,7 +2,6 @@
 
 var fs = require('fs'),
   path = require('path'),
-  jsdom = require('jsdom'),
   mime = require('mime'),
   mkdirp = require('mkdirp'),
   url = require('url'),
