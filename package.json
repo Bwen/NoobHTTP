@@ -1,9 +1,9 @@
 {
     "author": "Philippe Guilbault <philippe.guilbault@gmail.com>",
     "name": "NoobHTTP",
-    "description": "Simple nodejs HTTP server for static files",
-    "keywords": ["static", "server", "nodejs", "http", "simple", "webapp"],
-    "version": "0.4.1",
+    "description": "Simple Nodejs HTTP server",
+    "keywords": ["noob", "newb", "static", "server", "nodejs", "http", "https", "ssl", "simple", "webapp", "eventemitter2", "template", "i18n", "cache", "websocket", "socketio", "socket.io", "if-modified-since", "range", "video", "etag"],
+    "version": "0.5.0",
     "homepage": "https://github.com/Bwen/NoobHTTP",
     "licenses": [{"type": "MIT"}],
     "repository":{
@@ -11,12 +11,21 @@
         "url": "https://git@github.com:Bwen/NoobHTTP.git"
     },
     "engines": {
-        "node": "~0.6.11"
+        "node": "~0.8.0"
     },
     "dependencies": {
-        "mime": ">=1.2.5",
-        "eventemitter2": ">=0.4.9"
+        "mkdirp":        "~0.3.3",
+        "mime":          "~1.2.5",
+        "eventemitter2": "~0.4.9",
+        "cookies":       "~0.3.0",
+        "node-uuid":     "~1.3.3"
     },
-    "devDependencies": {},
+    "scripts": {
+        "test": "tap test/*.js"
+    },
+    "devDependencies": {
+        "tap" : "~0.2.5"
+    },
+
     "main": "index"
 }

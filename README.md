@@ -1,134 +1,208 @@
-## NoobHTTP
-This is meant to be a simple static files http server. It is geared towards
-webapps with socket.io. The reason why the http server __offers__ a hook,
-and thus optional, via web sockets is to be able dynamically load files cross domains.
+# NoobHTTP
+The version 0.5.0 breaks backward compatibility. I remade the whole thing from scratch to take full advantage of the EventEmitter2.
 
-For example if you are on domain1.com and you add a script tag to include a js script
-from domain2.com the js script will not be able to load files with XMLHttpRequest from
-its domain2.com.
-
-For client side utils that I use with NoobHTTP visit: https://github.com/Bwen/NoobUtils
-
-## Features
- - HTTP & HTTPS
- - BasicAuth
- - Regex for forbidden files
- - Property system, a bit like .htaccess
- - Emit logs, which can be turned off
- - More to come...
-
-## Using NoobHTTP
-The way to instantiate the NoobHTTP is done by passing an options object as parameter.
-
-All the posibilities are below:
-```javascript
-    var http_server = require('http').createServer(function (req, res) {
-        }),
-        io = require('socket.io').listen(http_server),
-        server = require('NoobHTTP').createServer({
-            home: './public/',
-            port: 80,
-            logEmit: true,
-            serverInfo: "NoobHTTP/1.0",
-            http_server: http_server,
-            socketio: io,
-            files: {
-                forbidden: "^\.",
-                property: ".noob.json"
-            },
-            ssl: {
-                key: fs.readFileSync('./ssl/privatekey.pem'),
-                cert: fs.readFileSync('./ssl/certificate.pem')
-            }
-            replacements: {
-                '.js,.css,.html': {
-                    "__hostUrl__": "https://domain2.com:9000/"
-                }
-            }
-        });
-```
+The module NoobHTTP as just one property and its `.Server`, which is an object. Its constructor accepts one argument. The possible options for that argument are as follow with their default values:
 
 ```javascript
-    home: './public/'
+{
+  serverInfo: "NoobHTTP/0.5.0", // Sent as the HTTP header Server.
+  home: "./public", // defines where all the public files resides.
+  port: 80, // The port the server is to listen on. Defaults to 80 /443 depending on ssl config property.
+  ssl: { // key & cert required for an HTTPs server.
+    key: null,
+    cert: null,
+  },
+  parsableExtensions: [".html"], // extensions that should be parsed for the mini-templating system.
+  availableLanguages: ["en"], // available languages for negociating a language with the browser.
+  cache: {
+    dir: "/tmp/noobhttp/cache", // where to put the mini-templating complied files.
+    days: 2 // this will be sent as the HTTP header Expires, adding it to the mtime of the file.
+  },
+  http_server: http_server // Already initiated HTTP Server, will not try to listen or initiate a server.
+}
 ```
-This property is __optional__ and defaults to `./public/`.
-Defines the root of the server.
 
-
+The first thing to know is that for every request NoobHTTP will add a property `.noobhttp` to the *ClientRequest* object as follow:
 ```javascript
-    port: 80
+ClientRequest.noobhttp = {
+  homedir: this.home,
+  eventString: eventString,
+  cookies: new Cookies(req, res),
+  language: this.getRequestLanguage(req),
+  data: null, // contains the data/body of the request
+  error: {
+    headers: {}, // headers that will be used to send the error page
+    data: '' // body of the error response
+  },
+  response: {
+    file: "/var/www/domain.com/directory/file.html", // absolute path of the file found
+    data: '', // Body of the response
+  },
+  auth: {
+    realm: 'Noob Realm',
+    request: false,
+    authorized: false
+  }
+}
 ```
-This property is __optional__ and defaults to 80 or 443 if the property "ssl" exists in the options
+Another important thing to know is that the property `ClientRequest.url` is parsed and replaced by the module `url`.
+`ClientRequest.url = url.parse(ClientRequest.url, true);`
 
+Also the `req.headers.host` is modified to always include the port to be consistent, since its used for all event strings.
 
+All files that are greater than 1 MegaByte will be streamed.
+
+The server will also serve shared files, in the file `sharedFiles.js` that resides at the root of the module you can add files as follow:
 ```javascript
-    logEmit: true
+module.exports = {
+  'Class.js': 'Class.js',
+  'EventEmitter2.js': 'node_modules/eventemitter2/lib/eventemitter2.js',
+  'uuid.js': 'node_modules/node-uuid/uuid.js'
+};
 ```
-This property is __optional__ and defaults to `true`.
-Gives the posibility to have no logs being emitted.
+You can specify files that you want to serve without having them be in the public directory.
 
+# 4 types of events
 
+### Requests
+For every request sent to the server an event will be emitted in the following syntax `request/domain.com:80/GET/directory/file.html`. The way the server checks if the file exists on the server is as follow: `var file = path.normalize(req.noobhttp.homedir + req.url.pathname);`; The only argument passed to the event is the `ClientRequest` which can be altered to change the behavior of the server.
+
+For example, if we wanted to make all requests that starts with `/video` point to a different folder than the home we would do something like:
 ```javascript
-    serverInfo: "NoobHTTP/1.0"
+server.on('request/*/GET/video/**', function (req) {
+  req.noobhttp.homedir = '/media/videos';
+  req.url.pathname = req.url.pathname.replace(/\/video/, '');
+});
 ```
-This property is __optional__ and defaults to `NoobHTTP/` and the version in the package.json.
-It is put in every response headers as the key 'Server:'.
 
-
+Another interesting example would be to prefix the requests' url with its domain name, giving the possibility to host more than one domain/site with the server.
 ```javascript
-    http_server: require('https')
+server.on('request/**', function (req) {
+  req.url.pathname = "/" + req.headers.host.split(':')[0] + req.url.pathname;
+});
 ```
-This property is __optional__ and defaults to null.
-If this option is specified the NoobHTTP will not instantiate a new http server
-and will not bind itself to it.
+One should be cautious with the order of the events...
 
-
+### Responses
+For every response the server will emit an event in the following syntax: `response/domain.com:80/GET/directory/file.html`. The only argument passed to the event is the `ClientRequest` which can be altered to change the behavior of the server. Before emitting this event the property `ClientRequest.noobhttp.response` is added. It contains the following:
 ```javascript
-    socketio: require('socket.io')
+{
+  file: "/var/www/domain.com/directory/file.html", // The absolute path to the file that was found
+  data: Buffer // The buffer that was returned by the fs.readFile()
+}
 ```
-This property is __optional__ and defaults to null.
-If this option is specified it will make a new namespace "noobhttp" and listen
-events "request" with a file parameter. It will reponse with an emit of the file
-name that was requested with either the content of the file or an error object.
 
-
+### Errors
+For every error the server encounters it will emit an event in the following syntax: `error/domain.com:80/404`. The event receives two arguments the first one is for the error code and the second is the `ClientRequest` which can be altered to change the behavior of the server. Before emitting this event the property `ClientRequest.noobhttp.error` is added. It contains the following:
 ```javascript
-    files: {
-        forbidden: "^\.",
-        property: ".noob.json"
-    }
+{
+  headers: {'content-type': 'text/plain'},
+  data: '404 File Not Found'
+}
 ```
-Theses two options are __optionals__ and defaults to null.
-The forbidden regexp option will default to false. If provided as the example all the
-files that starts with a dot will be responded with a 403.
 
-The property option will default to false. If provided as the example every time the
-NoobHTTP receives a request for a file it will crawl the directory up to its home
-directory and look for this property file name. Right now the property file name is of
-json type and supports only 2 options. {"auth": true} which forces a directory to request
-for a BasicAuth and {"https":"https://domain2.com/"} which enforces the url to be in https
-and thus redirects the browser with a 301.
-
-
+This can be useful to have personalized error pages, like so:
 ```javascript
-    ssl: {
-        key: fs.readFileSync('./ssl/privatekey.pem'),
-        cert: fs.readFileSync('./ssl/certificate.pem')
-    }
+server.on('error/**', function (code, req) {
+  req.response.headers = {'content-type': 'text/html'};
+  req.response.data = '<h1>' + code + " " +req.response.data + '</h1>';
+});
 ```
-This property is __optional__ and will default to null.
-If you want the server to be ssl this is ofcourse required.
 
+### Authentications
+When a event for a request is emitted the callback as the opportunity to change the following property `ClientRequest.noobhttp.auth.request` to `true`. Doing so will make the server request a basic authentication to the browser and emit an auth event in the following syntax: `auth/domain.com:80/directory/file.html`. It will pass 3 arguments, the first is the `ClientRequest`, the second is the username and the third is the password.
 
+The event MUST validate the username & password and change the following property `ClientRequest.noobhttp.auth.authorized` to `true` otherwise the server will keep prompting for the browser to authenticate itself.
+
+Example where we want every request to be authenticated:
 ```javascript
-    replacements: {
-        '.js,.css,.html': {
-            "__hostUrl__": "https://domain2.com:9000/"
-        }
-    }
+server.on('request/**', function (req) {
+  req.noobhttp.auth.request = true;
+});
+
+server.on('auth/**', function (req, username, password) {
+  req.noobhttp.auth.authorized = myAuthFunction(username, password);
+});
 ```
-This option is __optional__ and defaults to null.
-This gives the chance to specify markers to be replaced in certain extensions. Like
-mentioned in the beginning when including js script cross domains you want to be able
-to load static files (html templates) from the domain where the js comes from. Instead
-of hardcoding certain values this can be used.
+
+# HTTP Methods
+The server supports the HTTP method "OPTIONS", which queries the server to see which methods are available for a given resource. For now the only methods that are not implemented are "TRACE" and "CONNECT", and will return a 501 (Not Implemented) code if ever requested.
+
+The only methods that are available for __files__ are "OPTIONS" and "GET", any other methods requested for a __file__ will get 405 (Method Not Allowed).
+
+The methods available for __directories__ are "OPTIONS", "GET", "POST", "DELETE" and "PUT". When requesting a __directory__ resource the server will check if it can find the following files in the directory: `.get.js`, `.post.js`, `.delete.js` and `.put.js` and will compile a list of methods supported for the requested directory and will return it as the HTTP header "Allow" if the method is OPTIONS. If the method requested for the directory does not have a file for it the server will return a 405 (Method Not Allowed).
+
+Otherwise it will require that file and call its export as a function passing it 3 arguments. The first one is the `ClientRequest`, second is the `ClientResponse` and the third is a reference to a `setTimeout(,2000);` that needs to be cleared by the module. Otherwise an 500 (Internal Error) will be sent to the browser.
+
+If the method requested for a __directory__ is "GET" and the file `.get.js` is not present in the directory the server will check to see if the file `index.html` is present and alter the requested file for it.
+
+The server supports the method "HEAD".
+
+# HTTP Headers
+Typical headers sent from the server for a simple request
+```
+server: NoobHTTP/0.5.0
+content-type: text/html
+content-length: 908
+last-modified: Sun, 08 Jul 2012 21:24:01 GMT
+etag: "516162-908-1341782641000"
+accept-ranges: bytes
+cache-control: public, must-revalidate
+expires: Tue, 10 Jul 2012 21:24:01 GMT
+x-powered-by: Node.js/0.8.0
+x-generated-by: a noob... xD
+x-xss-protection: 1; mode=block
+x-content-type-options: nosniff
+```
+
+It supports the following headers sent from the client: `if-modified-since`, `if-none-match`, `range`, `if-range`, `cache-control`.
+
+
+# Mini-Templating system
+This is a very simple file include system for files that have a parsable extension. The server will crawl the directories up to the `.home` and identifies `.templates` folders for the request. If the requested file has a marker `{noobhttp-layout}` it will find the nearest `layout.html`. It will do the same for the markers `{noobhttp-include file=header.html}`. It will always crawl the directories from the requested file's folder and will always take the first file it finds.
+
+When a parsable extension is compiled it is saved in the `cache.dir` config and the http headers are modified accordingly.
+
+Example,
+requested file `/dir1/dir2/index.html`
+```html
+{noobhttp-layout}
+<div>hullo world</div>
+```
+
+file `/.templates/layout.html`
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>hullo world</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+<body>
+{noobhttp-include file=header.html}
+{noobhttp-content}
+{noobhttp-include file=footer.html}
+</body>
+</html>
+```
+
+file `/dir1/.templates/header.html`
+```html
+<header>hullo header</header>
+```
+
+__the result would give__:
+
+```html
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>hullo world</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+<body>
+<header>hullo header</header>
+<div>hullo world</div>
+</body>
+</html>
+```
