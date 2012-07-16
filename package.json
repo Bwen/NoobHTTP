@@ -3,7 +3,7 @@
     "name": "NoobHTTP",
     "description": "Simple Nodejs HTTP server",
     "keywords": ["noob", "newb", "static", "server", "nodejs", "http", "https", "ssl", "simple", "webapp", "eventemitter2", "template", "i18n", "cache", "websocket", "socketio", "socket.io", "if-modified-since", "range", "video", "etag"],
-    "version": "0.5.1",
+    "version": "0.5.2",
     "homepage": "https://github.com/Bwen/NoobHTTP",
     "licenses": [{"type": "MIT"}],
     "repository":{
