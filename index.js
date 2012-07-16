@@ -139,13 +139,13 @@ var fs = require('fs'),
     this.emit('request/' + eventString, req);
     this.processRequest(req, res);
   },
-  emitError: function emitError(code, req, res) {
+  emitError: function emitError(code, req, res, error) {
     req.noobhttp.error =  {
       headers: {'content-type': 'text/plain'},
       data: this.errorTexts[code]
     };
 
-    this.emit("error/" + req.headers.host + '/' + code, code, req);
+    this.emit("error/" + req.headers.host + '/' + code, code, req, error);
 
     res.setHeader('content-length', Buffer.byteLength(req.noobhttp.error.data));
     res.writeHead(code, req.noobhttp.error.headers);
@@ -244,13 +244,13 @@ var fs = require('fs'),
         try {
           var handler = require(file + '.' + req.method.toLowerCase() + '.js');
           if (typeof handler == 'function') {
-            handler(req, res, setTimeout(function () {
+            handler.call(this, req, res, setTimeout(function () {
               self.emitError(500, req, res);
             }, 2000));
           }
-        } catch (Error){
+        } catch (error){
           // FIXME: what if the setTimeout has gone off and the module crashes...
-          self.emitError(500, req, res);
+          self.emitError(500, req, res, error);
         }
 
         return;
