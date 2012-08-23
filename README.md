@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/Bwen/NoobHTTP.png)](http://travis-ci.org/Bwen/NoobHTTP)
 # NoobHTTP
 The version 0.5.0 breaks backward compatibility. I remade the whole thing from scratch to take full advantage of the EventEmitter2.
 
