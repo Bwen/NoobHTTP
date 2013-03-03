@@ -22,6 +22,12 @@ The module NoobHTTP as just one property and its `.Server`, which is an object. 
 }
 ```
 
+Simple server instanciation
+
+```javascript
+var noobHTTP = new (require('NoobHTTP')).Server({port: 9000});
+```
+
 The first thing to know is that for every request NoobHTTP will add a property `.noobhttp` to the *ClientRequest* object as follow:
 ```javascript
 ClientRequest.noobhttp = {
